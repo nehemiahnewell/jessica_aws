@@ -1,31 +1,50 @@
-var http = require('http'),
-    express = require('express'),
-    app = express(),
-    RED = require("node-red");
+var Hapi = require('hapi'),
+    path = require('path'),
+    port = process.env.PORT || 3000,
+    server = new Hapi.Server(port),
+    routes = {
+        css: {
+            method: 'GET',
+            path: '/styles/{path*}',
+            handler: createDirectoryRoute('styles')
+        },
+        js: {
+            method: 'GET',
+            path: '/scripts/{path*}',
+            handler: createDirectoryRoute('scripts')
+        },
+        assets: {
+            method: 'GET',
+            path: '/assets/{path*}',
+            handler: createDirectoryRoute('assets')
+        },
+        templates: {
+            method: 'GET',
+            path: '/templates/{path*}',
+            handler: createDirectoryRoute('templates')
+        },
+        spa: {
+            method: 'GET',
+            path: '/{path*}',
+            handler: {
+                file: path.join(__dirname, '/public/index.html')
+            }
+        }
+    };
 
-var server = http.createServer(app);
-app.use('/', express.static('public'));
-RED.init(server, {
-    uiPort: 1880,
-    httpAdminRoot: '/system/admin',
+server.route([ routes.css, routes.js, routes.assets, routes.templates, routes.spa ]);
+server.start( onServerStarted );
 
-    // Some nodes, such as HTTP In, can be used to listen for incoming http requests.
-    // By default, these are served relative to '/'. The following property
-    // can be used to specifiy a different root path. If set to false, this is
-    // disabled.
-    httpNodeRoot: '/',
+function onServerStarted() {
+    console.log( 'Server running on port ', port );
+}
 
-    // The following property can be used in place of 'httpAdminRoot' and 'httpNodeRoot',
-    // to apply the same root to both parts.
-    //httpRoot: '/red',
+function createDirectoryRoute( directory ) {
+    return {
+        directory: {
+            path: path.join(__dirname, '/public/', directory)
+        }
+    };
+}
 
-    // When httpAdminRoot is used to move the UI to a different root path, the
-    // following property can be used to identify a directory of static content
-    // that should be served at http://localhost:1880/.
-    httpStatic: __dirname + "/public"
-});
-
-app.use("/system/admin",RED.httpAdmin);
-app.use(function(req, res) {res.sendfile(__dirname + '/public/index.html');},RED.httpNode);
-server.listen(8080);
-RED.start();
+module.exports = server;

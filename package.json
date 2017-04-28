@@ -4,7 +4,7 @@
  "description": "third try on deployable jessica app",
  "main": "server.js",
  "scripts": {
-     "start": "npm start"
+     "start": "node server.js"
  },
  "engines": {
      "node": "4.x"
@@ -15,7 +15,9 @@
      "aws-sdk": "2.4.x",
      "node-red-contrib-storage-s3": "0.0.x",
      "when": "3.7.x",
-     "express": "^4.15.2",
+    "googleapis": "^19.0.0",
+    "hapi": "~7.5.0",
+    "path": "^0.4.9"
  },
  "author": "",
  "license": "ISC"
